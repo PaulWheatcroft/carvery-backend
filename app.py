@@ -9,8 +9,8 @@ app = Flask(__name__)
 def add_restaurant():
     data = request.json  # Assuming the data is sent in JSON format
     name = data.get('name')
-    line1_address = data.get('line1_address', '')
-    line2_address = data.get('line2_address', '')
+    line1_address = data.get('line1_address', None)
+    line2_address = data.get('line2_address', None)
     city = data.get('city')
     county = data.get('county')
     post_code = data.get('post_code')
@@ -28,13 +28,80 @@ def add_restaurant():
         """INSERT INTO restaurants
         (name, line1_address, line2_address, city, county, post_code, country)
         VALUES (?, ?, ?, ?, ?, ?, ?)""",
-        (name, line1_address, line2_address, city, county, post_code, country),
+        (
+            name,
+            line1_address or None,
+            line2_address or None,
+            city,
+            county,
+            post_code,
+            country,
+        ),
     )
     conn.commit()
 
     conn.close()
 
     return jsonify({'message': 'Restaurant added successfully'}), 201
+
+
+# Define the API endpoint to update a restaurant
+@app.route('/update-restaurant/<int:restaurant_id>', methods=['PUT'])
+def update_restaurant(restaurant_id):
+    data = request.json  # Assuming the data is sent in JSON format
+    name = data.get('name')
+    line1_address = data.get('line1_address', None)
+    line2_address = data.get('line2_address', None)
+    city = data.get('city')
+    county = data.get('county')
+    post_code = data.get('post_code')
+    country = data.get('country')
+
+    if not name or not city or not county or not post_code or not country:
+        return jsonify({'error': 'Missing required fieldz'}), 400
+
+    # Connect to the SQLite database
+    conn = sqlite3.connect('./carvery.db')
+    cursor = conn.cursor()
+
+    # Update the restaurant in the database
+    cursor.execute(
+        """UPDATE restaurants
+        SET name = ?, line1_address = ?, line2_address = ?, city = ?,
+        county = ?, post_code = ?, country = ?
+        WHERE id = ?""",
+        (
+            name,
+            line1_address or None,
+            line2_address or None,
+            city,
+            county,
+            post_code,
+            country,
+            restaurant_id,
+        ),
+    )
+    conn.commit()
+
+    conn.close()
+
+    return jsonify({'message': 'Restaurant updated successfully'}), 200
+
+
+# Define the API endpoint to delete a restaurant
+@app.route('/delete-restaurant/<int:restaurant_id>', methods=['DELETE'])
+def delete_restaurant(restaurant_id):
+    # Connect to the SQLite database
+    conn = sqlite3.connect('./carvery.db')
+    cursor = conn.cursor()
+
+    # Delete the restaurant from the database
+    cursor.execute("DELETE FROM restaurants WHERE id = ?", (restaurant_id,))
+    conn.commit()
+
+    conn.close()
+
+    return jsonify({'message': 'Restaurant deleted successfully'}), 200
 
 
 @app.route('/restaurants', methods=['GET'])
