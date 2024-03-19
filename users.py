@@ -5,6 +5,7 @@ import sqlite3
 
 def add_user(data):
     data = request.json
+    id = data.get('id')
     name = data.get('name')
     email = data.get('email')
     created = datetime.now()
@@ -17,9 +18,10 @@ def add_user(data):
 
     cursor.execute(
         """INSERT INTO users
-        (name, email, created)
-        VALUES (?, ?, ?)""",
+        (id, name, email, created)
+        VALUES (?, ?, ?, ?)""",
         (
+            id,
             name,
             email,
             created,
@@ -100,10 +102,10 @@ def update_user(user_id, data):
     return jsonify({'message': 'User updated successfully'}), 200
 
 
-def get_user_details(user_email):
+def get_user_details(user_id):
     conn = sqlite3.connect('./carvery.db')
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE email = ?", (user_email,))
+    cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
     user = cursor.fetchone()
     conn.close()
 

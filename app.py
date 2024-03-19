@@ -1,4 +1,5 @@
 from flask import Flask, request
+from flask_cors import CORS
 
 from restaurants import (
     add_restaurant,
@@ -23,6 +24,7 @@ from scores import (
 )
 
 app = Flask(__name__)
+CORS(app, origins=['http://localhost:3000'])  # Set the allowed origin
 
 
 @app.route('/add-user', methods=['POST'])
@@ -51,9 +53,9 @@ def update_user_endpoint(user_id):
     return result
 
 
-@app.route('/users/<string:user_email>', methods=['GET'])
-def get_user_details_endpoint(user_email):
-    result = get_user_details(user_email)
+@app.route('/users/<string:user_id>', methods=['GET'])
+def get_user_details_endpoint(user_id):
+    result = get_user_details(user_id)
     return result
 
 
