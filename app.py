@@ -18,9 +18,12 @@ from users import (
 
 from scores import (
     add_scores,
+    delete_score,
+    get_all_scores,
+    get_score_averages_for_each_restaurant,
     get_scores_for_user,
     get_scores_for_restaurant,
-    delete_score,
+    get_score_averages_for_restaurant,
 )
 
 app = Flask(__name__)
@@ -85,6 +88,12 @@ def get_restaurants_endpoint():
     return result
 
 
+@app.route('/all-scores', methods=['GET'])
+def get_all_scores_endpoint():
+    result = get_all_scores()
+    return result
+
+
 @app.route('/add-scores', methods=['POST'])
 def add_scores_endpoint():
     data = request.json
@@ -92,15 +101,27 @@ def add_scores_endpoint():
     return result
 
 
-@app.route('/user-scores/<string:user_email>', methods=['GET'])
-def get_scores_for_user_endpoint(user_email):
-    result = get_scores_for_user(user_email)
+@app.route('/user-scores/<string:user_id>', methods=['GET'])
+def get_scores_for_user_endpoint(user_id):
+    result = get_scores_for_user(user_id)
     return result
 
 
 @app.route('/restaurant-scores/<int:restaurant_id>', methods=['GET'])
 def get_scores_for_restaurant_endpoint(restaurant_id):
     result = get_scores_for_restaurant(restaurant_id)
+    return result
+
+
+@app.route('/score-averages/<int:restaurant_id>', methods=['GET'])
+def get_score_totals_for_restaurant_endpoint(restaurant_id):
+    result = get_score_averages_for_restaurant(restaurant_id)
+    return result
+
+
+@app.route('/all-score-averages', methods=['GET'])
+def get_score_totals_for_each_restaurant_endpoint():
+    result = get_score_averages_for_each_restaurant()
     return result
 
 

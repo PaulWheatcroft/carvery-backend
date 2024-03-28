@@ -54,19 +54,14 @@ def add_scores(
         )
 
 
-def get_scores_for_user(user_email):
+def get_scores_for_user(user_id):
     conn = sqlite3.connect('./carvery.db')
     cursor = conn.cursor()
 
-    # Resolve user ID from the email
-    cursor.execute("SELECT id FROM users WHERE email = ?", (user_email,))
-    user_id = cursor.fetchone()
-    if user_id is None:
-        conn.close()
-        return jsonify({'error': 'User not found'}), 404
+    print(user_id)
 
     # Get scores for the resolved user ID
-    cursor.execute("SELECT * FROM scores WHERE user_id = ?", (user_id[0],))
+    cursor.execute("SELECT * FROM scores WHERE user_id = ?", (user_id,))
     scores = cursor.fetchall()
     conn.close()
 
@@ -150,3 +145,135 @@ def delete_score(score_id, user_id):
             ),
             404,
         )
+
+
+def get_all_scores():
+    conn = sqlite3.connect('./carvery.db')
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """SELECT scores.*, restaurants.name FROM scores JOIN restaurants ON
+        scores.restaurant_id = restaurants.id ORDER BY scores.date DESC"""
+    )
+    scores = cursor.fetchall()
+    conn.close()
+
+    score_list = []
+    for score in scores:
+        score_item = {
+            'id': score[0],
+            'locations': score[1],
+            'parking': score[2],
+            'meat': score[3],
+            'roast_potatoes': score[4],
+            'cauliflower_cheese': score[5],
+            'veg': score[6],
+            'ambience': score[7],
+            'customer_service': score[8],
+            'overall_value': score[9],
+            'user_id': score[10],
+            'restaurant_id': score[11],
+            'restaurant_name': score[14],
+            'date': score[12],
+            'price': score[13],
+        }
+        score_list.append(score_item)
+
+    return jsonify({'results': len(score_list)}, {'scores': score_list}), 200
+
+
+def get_score_averages_for_restaurant(restaurant_id):
+    conn = sqlite3.connect('./carvery.db')
+    cursor = conn.cursor()
+
+    print(restaurant_id)
+
+    cursor.execute(
+        """SELECT
+        AVG(locations) AS average_location,
+        AVG(parking) AS average_parking,
+        AVG(meat) AS average_meat,
+        AVG(roast_potatoes) AS average_roast_potatoes,
+        AVG(cauliflower_cheese) AS average_cauliflower_cheese,
+        AVG(veg) AS average_veg,
+        AVG(ambience) AS average_ambience,
+        AVG(customer_service) AS average_customer_service,
+        AVG(overall_value) AS average_overall_value
+    FROM scores
+    WHERE restaurant_id = ?""",
+        (restaurant_id,),
+    )
+
+    averages = cursor.fetchone()
+    conn.close()
+
+    if averages:
+        total_average = sum(averages)
+        averages_dict = {
+            'averages': {
+                'locations': averages[0],
+                'parking': averages[1],
+                'meat': averages[2],
+                'roast_potatoes': averages[3],
+                'cauliflower_cheese': averages[4],
+                'veg': averages[5],
+                'ambience': averages[6],
+                'customer_service': averages[7],
+                'overall_value': averages[8],
+                'total_average': total_average,
+            }
+        }
+        return jsonify(averages_dict), 200
+    else:
+        return jsonify({'error': 'No scores found for this restaurant'}), 404
+
+
+def get_score_averages_for_each_restaurant():
+    conn = sqlite3.connect('./carvery.db')
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """SELECT r.id, r.name,
+        AVG(s.locations) AS average_location,
+        AVG(s.parking) AS average_parking,
+        AVG(s.meat) AS average_meat,
+        AVG(s.roast_potatoes) AS average_roast_potatoes,
+        AVG(s.cauliflower_cheese) AS average_cauliflower_cheese,
+        AVG(s.veg) AS average_veg,
+        AVG(s.ambience) AS average_ambience,
+        AVG(s.customer_service) AS average_customer_service,
+        AVG(s.overall_value) AS average_overall_value
+    FROM scores s
+    JOIN restaurants r ON s.restaurant_id = r.id
+    GROUP BY s.restaurant_id"""
+    )
+
+    averages = cursor.fetchall()
+    conn.close()
+
+    if averages:
+        averages_list = []
+        for average in averages:
+            average_item = {
+                'restaurant_id': average[0],
+                'restaurant_name': average[1],
+                'average_location': average[2],
+                'average_parking': average[3],
+                'average_meat': average[4],
+                'average_roast_potatoes': average[5],
+                'average_cauliflower_cheese': average[6],
+                'average_veg': average[7],
+                'average_ambience': average[8],
+                'average_customer_service': average[9],
+                'average_overall_value': average[10],
+            }
+            averages_list.append(average_item)
+
+        return (
+            jsonify(
+                {'results': len(averages_list)}, {'averages': averages_list}
+            ),
+            200,
+        )
+    else:
+        return jsonify({'error': 'No scores found in the database'}), 404
