@@ -233,7 +233,8 @@ def get_score_averages_for_each_restaurant():
     cursor = conn.cursor()
 
     cursor.execute(
-        """SELECT r.id, r.name,
+        """SELECT r.id, r.name, r.line1_address, r.line2_address, r.city,
+        r.county, r.post_code, r.country,
         AVG(s.locations) AS average_location,
         AVG(s.parking) AS average_parking,
         AVG(s.meat) AS average_meat,
@@ -242,7 +243,8 @@ def get_score_averages_for_each_restaurant():
         AVG(s.veg) AS average_veg,
         AVG(s.ambience) AS average_ambience,
         AVG(s.customer_service) AS average_customer_service,
-        AVG(s.overall_value) AS average_overall_value
+        AVG(s.overall_value) AS average_overall_value,
+        AVG(s.overall_food) AS average_overall_food
     FROM scores s
     JOIN restaurants r ON s.restaurant_id = r.id
     GROUP BY s.restaurant_id"""
@@ -254,18 +256,30 @@ def get_score_averages_for_each_restaurant():
     if averages:
         averages_list = []
         for average in averages:
+            restaurant_details = {
+                'id': average[0],
+                'name': average[1],
+                'address1': average[2],
+                'address2': average[3],
+                'city': average[4],
+                'county': average[5],
+                'postcode': average[6],
+                'country': average[7],
+            }
+            total_average = sum(average[8:18])
             average_item = {
-                'restaurant_id': average[0],
-                'restaurant_name': average[1],
-                'average_location': average[2],
-                'average_parking': average[3],
-                'average_meat': average[4],
-                'average_roast_potatoes': average[5],
-                'average_cauliflower_cheese': average[6],
-                'average_veg': average[7],
-                'average_ambience': average[8],
-                'average_customer_service': average[9],
-                'average_overall_value': average[10],
+                'restaurant_details': restaurant_details,
+                'average_location': average[8],
+                'average_parking': average[9],
+                'average_meat': average[10],
+                'average_roast_potatoes': average[11],
+                'average_cauliflower_cheese': average[12],
+                'average_veg': average[13],
+                'average_ambience': average[14],
+                'average_customer_service': average[15],
+                'average_overall_value': average[16],
+                'average_overall_food': average[17],
+                'total_average': total_average,
             }
             averages_list.append(average_item)
 
