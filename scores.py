@@ -3,7 +3,7 @@ from flask import jsonify
 
 
 def add_scores(
-    locations,
+    location,
     parking,
     meat,
     roast_potatoes,
@@ -22,12 +22,12 @@ def add_scores(
 
     try:
         cursor.execute(
-            """INSERT INTO scores (locations, parking, meat, roast_potatoes,
+            """INSERT INTO scores (location, parking, meat, roast_potatoes,
             cauliflower_cheese, veg, ambience, customer_service, overall_value,
             user_id, restaurant_id, date, price)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
-                locations,
+                location,
                 parking,
                 meat,
                 roast_potatoes,
@@ -70,7 +70,7 @@ def get_scores_for_user(user_id):
     for score in scores:
         score_item = {
             'id': score[0],
-            'locations': score[1],
+            'location': score[1],
             'parking': score[2],
             'meat': score[3],
             'roast_potatoes': score[4],
@@ -103,7 +103,7 @@ def get_scores_for_restaurant(restaurant_id):
     for score in scores:
         score_item = {
             'id': score[0],
-            'locations': score[1],
+            'location': score[1],
             'parking': score[2],
             'meat': score[3],
             'roast_potatoes': score[4],
@@ -162,7 +162,7 @@ def get_all_scores():
     for score in scores:
         score_item = {
             'id': score[0],
-            'locations': score[1],
+            'location': score[1],
             'parking': score[2],
             'meat': score[3],
             'roast_potatoes': score[4],
@@ -190,7 +190,7 @@ def get_score_averages_for_restaurant(restaurant_id):
 
     cursor.execute(
         """SELECT
-        AVG(locations) AS average_location,
+        AVG(location) AS average_location,
         AVG(parking) AS average_parking,
         AVG(meat) AS average_meat,
         AVG(roast_potatoes) AS average_roast_potatoes,
@@ -211,7 +211,7 @@ def get_score_averages_for_restaurant(restaurant_id):
         total_average = sum(averages)
         averages_dict = {
             'averages': {
-                'locations': averages[0],
+                'location': averages[0],
                 'parking': averages[1],
                 'meat': averages[2],
                 'roast_potatoes': averages[3],
@@ -235,7 +235,7 @@ def get_score_averages_for_each_restaurant():
     cursor.execute(
         """SELECT r.id, r.name, r.line1_address, r.line2_address, r.city,
         r.county, r.post_code, r.country,
-        AVG(s.locations) AS average_location,
+        AVG(s.location) AS average_location,
         AVG(s.parking) AS average_parking,
         AVG(s.meat) AS average_meat,
         AVG(s.roast_potatoes) AS average_roast_potatoes,
