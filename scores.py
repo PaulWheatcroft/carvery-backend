@@ -63,27 +63,14 @@ def get_scores_for_user(user_id):
     # Get scores for the resolved user ID
     cursor.execute("SELECT * FROM scores WHERE user_id = ?", (user_id,))
     scores = cursor.fetchall()
+    # Get the column names from the cursor description
+    column_names = [description[0] for description in cursor.description]
     conn.close()
 
     # Convert scores to JSON format
     score_list = []
     for score in scores:
-        score_item = {
-            'id': score[0],
-            'location': score[1],
-            'parking': score[2],
-            'meat': score[3],
-            'roast_potatoes': score[4],
-            'cauliflower_cheese': score[5],
-            'veg': score[6],
-            'ambience': score[7],
-            'customer_service': score[8],
-            'overall_value': score[9],
-            'user_id': score[10],
-            'restaurant_id': score[11],
-            'date': score[12],
-            'price': score[13],
-        }
+        score_item = {column_names[i]: score[i] for i in range(len(score))}
         score_list.append(score_item)
 
     return jsonify({'scores': score_list}), 200
